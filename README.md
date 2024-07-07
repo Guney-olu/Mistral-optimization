@@ -23,4 +23,4 @@ python3 test.py
 
 **Groq = 559 tokens/sec > Our's = 260 tokens/sec > fireworks = 251 tokens/sec**
 
-![Image Alt text](Massests/rsz_our_toks.png)
+![Image Alt text](assests/rsz_our_toks.png)
