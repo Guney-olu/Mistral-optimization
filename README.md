@@ -6,7 +6,7 @@ Kaggle notebook
 Running Inference Scripts
 
 ```sh
-python3 Infernce_scripts/Base_script.py --model mistralai/Mistral-7B-v0.1 --prompt "I am batman" --output_length 1000
+python3 Infernce_scripts/Base_script.py --model mistralai/Mistral-7B-v0.1 --prompt "I am batman" --output_length 1000 --hf_token "XYZ"
 ```
 
 Run Tests scrits directly

@@ -7,8 +7,7 @@ import time
 from peft import PeftModel
 
 
-access_token = "add your token here"
-login(token = access_token)
+
 
 def mode_setup(model_name, adapter_name=None):
     if adapter_name:
@@ -58,11 +57,14 @@ if __name__ == "__main__":
     parser.add_argument("--seed", type=int, help="Random seed")
     parser.add_argument("--prompt", required=True, help="Input prompt for the model")
     parser.add_argument("--output_length", type=int, default=128, help="Length of the output text")
-
+    parser.add_argument("--hf_token",help="hugging face token")
     args = parser.parse_args()
 
     if args.seed:
         torch.manual_seed(args.seed)
+    
+    access_token = args.hf_token
+    login(token = access_token)
 
     model, tokenizer = mode_setup(args.model, args.adapter_name)
     input_text = [args.prompt]
