@@ -1,0 +1,5 @@
+transformers
+torch
+bitsandbytes
+accelerate
+flash-attn
