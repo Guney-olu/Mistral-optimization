@@ -4,23 +4,43 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 import argparse
 import torch
 import time
+from peft import PeftModel
 
-login(token=os.environ.get("XYZ")) # ADD your token here
 
-def mode_setup(model_name):
-    quant_config = BitsAndBytesConfig(
-        load_in_4bit=True,
-        bnb_4bit_quant_type="nf4",
-        bnb_4bit_compute_dtype=torch.float16,
-    )
+access_token = "add your token here"
+login(token = access_token)
 
-    model = AutoModelForCausalLM.from_pretrained(model_name, quantization_config=quant_config,
-                                                torch_dtype=torch.float16, attn_implementation="sdpa", device_map="cuda")
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    return model,tokenizer
+def mode_setup(model_name, adapter_name=None):
+    if adapter_name:
+        model = AutoModelForCausalLM.from_pretrained(
+            model_name,
+            load_in_4bit=True,
+            torch_dtype=torch.float16,
+            device_map={"": 0}
+        )
+        model = PeftModel.from_pretrained(model, adapter_name)
+        model = model.merge_and_unload()
+        tokenizer = AutoTokenizer.from_pretrained(model_name)
+        tokenizer.bos_token_id = 1
+        stop_token_ids = [0]
+    else:
+        quant_config = BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_quant_type="nf4",
+            bnb_4bit_compute_dtype=torch.float16,
+        )
+        model = AutoModelForCausalLM.from_pretrained(
+            model_name, 
+            quantization_config=quant_config,
+            torch_dtype=torch.float16, 
+            attn_implementation="sdpa", 
+            device_map="cuda"
+        )
+        tokenizer = AutoTokenizer.from_pretrained(model_name)
+    return model, tokenizer
 
-def generate_outputs(inputs,model,tokenizer,output_length=128):
-    #using sdp_kernel for fast inference 
+def generate_outputs(inputs, model, tokenizer, output_length=128):
+    # Using sdp_kernel for fast inference 
     with torch.backends.cuda.sdp_kernel(enable_flash=True, enable_math=False, enable_mem_efficient=False):
         inputs = inputs.to('cuda')
         outputs = model.generate(
@@ -34,6 +54,7 @@ if __name__ == "__main__":
         epilog="Help"
     )
     parser.add_argument("--model", required=True, help="Model name")
+    parser.add_argument("--adapter_name", help="Adapter name")
     parser.add_argument("--seed", type=int, help="Random seed")
     parser.add_argument("--prompt", required=True, help="Input prompt for the model")
     parser.add_argument("--output_length", type=int, default=128, help="Length of the output text")
@@ -43,7 +64,7 @@ if __name__ == "__main__":
     if args.seed:
         torch.manual_seed(args.seed)
 
-    model,tokenizer = mode_setup(args.model)
+    model, tokenizer = mode_setup(args.model, args.adapter_name)
     input_text = [args.prompt]
     inputs = tokenizer(input_text, return_tensors="pt")
 
@@ -54,7 +75,7 @@ if __name__ == "__main__":
 
     # Benchmarking
     start_time = time.time()
-    outputs = generate_outputs(inputs,model,tokenizer,output_length)
+    outputs = generate_outputs(inputs, model, tokenizer, output_length)
     end_time = time.time()
     total_time = end_time - start_time
     # Calculating throughput

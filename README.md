@@ -1,7 +1,7 @@
 # Performance Optimzation
 
 Kaggle notebook
-`https://www.kaggle.com/code/ariyasaran/ml-mixtral-assign`
+`https://www.kaggle.com/code/ariyasaran/ml-mixtral-assignopt/notebook`
 
 Running Inference Scripts
 
@@ -24,3 +24,13 @@ python3 test.py
 **Groq = 559 tokens/sec > Our's = 260 tokens/sec > fireworks = 251 tokens/sec**
 
 ![Image Alt text](assests/rsz_our_toks.png)
+
+
+## TODO
+
+- [ ] **Improve speed:** Using vLLM and awq quantization to imporve speed
+- [ ] **More on Quantization:** trying 2bit and 3bit using llama.cpp (gguf models)
+CS-SUP
+- [ ] **Modify code for kaggle notebook** Modifying the code for the kaggle notebook support bc it has 2*T4 GPU
+ .....on ...
+
